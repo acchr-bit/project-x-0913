@@ -9,7 +9,7 @@ try:
     genai.configure(api_key=API_KEY)
     
     # Using the latest stable model string
-    model = genai.GenerativeModel('gemini-1.5-flash-latest') 
+model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
     st.error(f"Setup Error: {e}")
     st.stop()
