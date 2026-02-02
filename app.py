@@ -85,44 +85,36 @@ def call_gemini(prompt):
 st.set_page_config(
     page_title="Writing Test", 
     layout="centered",
-    initial_sidebar_state="expanded" # Forces sidebar to be open
+    initial_sidebar_state="expanded" # Force it open
 )
 
-hide_streamlit_style = """
-            <style>
-            /* Hide the Deploy button */
-            .stDeployButton {display:none;}
+st.markdown("""
+    <style>
+    /* 1. Hide the entire top header bar (where Share/GitHub/Star live) */
+    header[data-testid="stHeader"] {
+        visibility: hidden;
+        height: 0px;
+    }
 
-            /* Hide the hamburger menu (top right three lines) */
-            #MainMenu {visibility: hidden;}
+    /* 2. Hide the Main Menu hamburger */
+    #MainMenu {visibility: hidden;}
+    
+    /* 3. Hide the footer */
+    footer {visibility: hidden;}
+    
+    /* 4. IMPORTANT: Since we hid the header, we must ensure the sidebar 
+       is still accessible. This CSS pushes the sidebar content down 
+       so it doesn't overlap with the top of the screen. */
+    [data-testid="stSidebar"] > div:first-child {
+        padding-top: 2rem;
+    }
 
-            /* Hide the header/toolbar entirely on the RIGHT side */
-            /* This allows the sidebar (on the left) to remain visible */
-            header[data-testid="stHeader"] {
-                display: flex;
-                flex-direction: row-reverse;
-            }
-            
-            /* Hide the GitHub, Share, and Star container */
-            div[data-testid="stToolbar"] {
-                display: none !important;
-            }
-
-            /* Hide the colored line at the top */
-            div[data-testid="stDecoration"] {
-                display: none !important;
-            }
-
-            /* Hide footer */
-            footer {visibility: hidden;}
-
-            /* Optional: Make the sidebar background a different color to distinguish it */
-            [data-testid="stSidebar"] {
-                background-color: #f8f9fb;
-            }
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+    /* 5. Hide any action buttons (Deploy, etc.) */
+    .stDeployButton {
+        display: none !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 st.title("📝 Writing Test")
 
