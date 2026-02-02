@@ -135,13 +135,18 @@ if col1.button("🔍 Get Feedback"):
 if st.session_state.fb1:
     st.markdown("---")
     st.info(st.session_state.fb1)
-
+    
     if col2.button("🚀 Submit Final Revision"):
-        with st.spinner("Checking revision..."):
+            with st.spinner("Checking revision..."):
             rev_prompt = (
-                f"Original Feedback: {st.session_state.fb1}\n\n"
-                f"Compare this new version to the draft. Did they fix the quoted errors? "
-                f"Mention specific improvements without giving a new grade.\n\nNEW VERSION: {essay}"
+                f"--- ORIGINAL FEEDBACK ---\n{st.session_state.fb1}\n\n"
+                f"--- NEW REVISED VERSION ---\n{essay}\n\n"
+                f"CRITICAL INSTRUCTIONS:\n"
+                f"1. Compare the new version to the original feedback.\n"
+                f"2. Verify if the student actually fixed the errors. If they fixed the grammar but introduced a NEW spelling mistake (e.g., 'travell' instead of 'travel'), you MUST point it out.\n"
+                f"3. Do not just say 'Corrected'. Be precise. If a new error was introduced during the fix, mention it clearly.\n"
+                f"4. Praise genuine improvements, but remain a strict examiner.\n"
+                f"5. DO NOT give a new grade. NEVER mention the student's name."
             )
             fb2 = call_gemini(rev_prompt)
             st.session_state.fb2 = fb2
