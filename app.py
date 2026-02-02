@@ -61,6 +61,7 @@ with col1:
                 try:
                     fb = call_gemini(f"Grade this B2 essay. Feedback first, then end with 'FINAL MARK: X/10'.\n\n{essay}")
                     st.session_state.fb1 = fb
+                    st.session_state.essay_content_at_first_submit = essay #
                     mark = fb.split("FINAL MARK:")[1].split("\n")[0].strip() if "FINAL MARK:" in fb else "N/A"
                     
                     requests.post(SHEET_URL, json={
@@ -79,19 +80,35 @@ if st.session_state.fb1:
     st.info(st.session_state.fb1)
 
     # STEP 2: FINAL SUBMISSION (Only shows after Draft 1 is checked)
-    with col2:
-        if st.button("🚀 Submit FINAL Version"):
-            with st.spinner("Saving Final Essay..."):
-                try:
-                    fb2 = call_gemini(f"Compare this final version to the first. Did they improve? Give a final short comment.\n\n{essay}")
-                    st.session_state.fb2 = fb2
-                    
-                    requests.post(SHEET_URL, json={
-                        "type": "REVISION", "Group": group, "Students": student_list, "FinalEssay": essay, "FB2": fb2
-                    })
-                    st.balloons()
-                except Exception as e:
-                    st.error(f"Error: {e}")
+# STEP 2: FINAL SUBMISSION
+with col2:
+    if st.button("🚀 Submit FINAL Version"):
+        with st.spinner("Saving Final Essay..."):
+            try:
+                # We give the AI the full context: Original, Feedback, and the new Version
+                context_prompt = (
+                    f"You are a teacher. Here is the context of the student's work:\n\n"
+                    f"ORIGINAL DRAFT: {st.session_state.essay_content_at_first_submit}\n\n"
+                    f"YOUR PREVIOUS FEEDBACK: {st.session_state.fb1}\n\n"
+                    f"STUDENT'S REVISED VERSION: {essay}\n\n"
+                    f"Please compare the two versions. Did they follow your advice? "
+                    f"Provide a brief final encouragement."
+                )
+                
+                fb2 = call_gemini(context_prompt)
+                st.session_state.fb2 = fb2
+                
+                requests.post(SHEET_URL, json={
+                    "type": "REVISION", 
+                    "Group": group, 
+                    "Students": student_list, 
+                    "FinalEssay": essay, 
+                    "FB2": fb2
+                })
+                st.balloons()
+                st.rerun() # Refresh to show the green FB2 box
+            except Exception as e:
+                st.error(f"Error: {e}")
 
 if st.session_state.fb2:
     st.subheader("✅ Final Result")
