@@ -85,24 +85,41 @@ def call_gemini(prompt):
 st.set_page_config(
     page_title="Writing Test", 
     layout="centered",
-    initial_sidebar_state="expanded" # This ensures the sidebar is open on load
+    initial_sidebar_state="expanded" # Forces sidebar to be open
 )
+
 hide_streamlit_style = """
             <style>
-            /* 1. Hide the right-side toolbar (GitHub, Share, Star) */
-            [data-testid="stToolbar"] {visibility: hidden;}
+            /* Hide the Deploy button */
+            .stDeployButton {display:none;}
+
+            /* Hide the hamburger menu (top right three lines) */
+            #MainMenu {visibility: hidden;}
+
+            /* Hide the header/toolbar entirely on the RIGHT side */
+            /* This allows the sidebar (on the left) to remain visible */
+            header[data-testid="stHeader"] {
+                display: flex;
+                flex-direction: row-reverse;
+            }
             
-            /* 2. Hide the 'Deploy' button specifically */
-            .stAppDeployButton {display:none;}
-            
-            /* 3. Hide the decoration line at the top */
-            [data-testid="stDecoration"] {display:none;}
-            
-            /* 4. Hide the footer */
+            /* Hide the GitHub, Share, and Star container */
+            div[data-testid="stToolbar"] {
+                display: none !important;
+            }
+
+            /* Hide the colored line at the top */
+            div[data-testid="stDecoration"] {
+                display: none !important;
+            }
+
+            /* Hide footer */
             footer {visibility: hidden;}
 
-            /* 5. Keep the sidebar button area visible but clean */
-            header {visibility: visible !important;}
+            /* Optional: Make the sidebar background a different color to distinguish it */
+            [data-testid="stSidebar"] {
+                background-color: #f8f9fb;
+            }
             </style>
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
