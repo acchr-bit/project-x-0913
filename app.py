@@ -28,7 +28,9 @@ with st.sidebar:
 
 # 4. API CALL
 def call_gemini(prompt):
-    # Now that billing is active, we use the standard v1 endpoint
+    # We are using the most specific stable name for 2026
+    # If gemini-1.5-flash fails, we try gemini-1.5-flash-latest
+    
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={API_KEY}"
     headers = {'Content-Type': 'application/json'}
     data = {"contents": [{"parts": [{"text": prompt}]}]}
@@ -37,9 +39,13 @@ def call_gemini(prompt):
     
     if response.status_code == 200:
         return response.json()['candidates'][0]['content']['parts'][0]['text']
-    elif response.status_code == 429:
-        raise Exception("Google is still activating your quota. Please wait 1 minute and try again.")
     else:
+        # ULTIMATE FALLBACK: If the above fails, use the 'latest' alias which usually works in EU
+        fallback_url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key={API_KEY}"
+        res_latest = requests.post(fallback_url, headers=headers, json=data)
+        if res_latest.status_code == 200:
+            return res_latest.json()['candidates'][0]['content']['parts'][0]['text']
+            
         raise Exception(f"Error {response.status_code}: {response.text}")
 
 # 5. LOGIC
