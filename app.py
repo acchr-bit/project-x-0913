@@ -82,17 +82,41 @@ def call_gemini(prompt):
     return "The teacher is busy. Try again in 10 seconds."
 
 # 5. UI
-st.set_page_config(page_title="Writing Test", layout="centered")
+st.set_page_config(
+    page_title="Writing Test", 
+    layout="centered",
+    initial_sidebar_state="expanded" # Start with it open
+)
 
-hide_streamlit_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            header {visibility: hidden;}
-            footer {visibility: hidden;}
-            .stAppDeployButton {display:none;}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+# --- CSS TO HIDE ICONS AND LOCK SIDEBAR OPEN ---
+st.markdown("""
+    <style>
+    /* 1. Hide the right-side icons (Share, GitHub, etc.) */
+    [data-testid="stHeaderActionElements"], .stDeployButton, [data-testid="stToolbar"] {
+        display: none !important;
+    }
+
+    /* 2. Hide the 'Close' button (the arrow) on the sidebar so it can't be hidden */
+    [data-testid="stSidebarCollapseButton"] {
+        display: none !important;
+    }
+
+    /* 3. Hide the main hamburger menu (the three lines) */
+    #MainMenu {
+        visibility: hidden;
+    }
+
+    /* 4. Hide the top decoration line and the footer */
+    [data-testid="stDecoration"], footer {
+        display: none !important;
+    }
+
+    /* 5. Clean up the header background so it's invisible but exists */
+    header {
+        background-color: rgba(0,0,0,0) !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 st.title("📝 Writing Test")
 
