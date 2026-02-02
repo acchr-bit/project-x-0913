@@ -12,9 +12,11 @@ except Exception as e:
     st.error("Secrets not found. Please check your Streamlit Advanced Settings.")
     st.stop()
 
-# 2. INITIALIZE SESSION STATE (Prevents NameError)
+# 2. INITIALIZE SESSION STATE
 if 'submitted' not in st.session_state:
     st.session_state.submitted = False
+if 'original_essay' not in st.session_state:
+    st.session_state.original_essay = ""
 
 # 3. TEACHER CONFIGURATION
 ASSIGNMENT_NAME = "Email to Liam (End of Year Trip)"
@@ -24,7 +26,6 @@ Tell him about your end of year trip plans: places to visit,
 activities, and about your classmates, friends and family.
 """
 
-# THE RUBRIC (Your specific point-deduction system)
 SYSTEM_PROMPT = f"""
 You are a strict but encouraging British English teacher grading at B2 CEFR level.
 TASK: {TASK_INSTRUCTIONS}
@@ -47,7 +48,6 @@ Tone: Strict, straightforward, simple, encouraging.
 st.set_page_config(page_title="Writing Portal", layout="centered")
 st.title("📝 Student Writing Portal")
 
-# Sidebar for identification
 with st.sidebar:
     st.header("Student Info")
     group = st.selectbox("Select Group", ["3A", "3C", "4A", "4B", "4C"])
@@ -68,16 +68,13 @@ if not st.session_state.submitted:
             st.error("Please provide at least one name and your essay.")
         else:
             with st.spinner("Teacher AI is grading..."):
-                # Call Gemini AI
                 response = model.generate_content([SYSTEM_PROMPT, f"FIRST DRAFT SUBMISSION: {essay}"])
                 feedback_text = response.text
                 
-                # Try to extract mark for the sheet
                 mark = "N/A"
                 if "FINAL MARK:" in feedback_text:
                     mark = feedback_text.split("FINAL MARK:")[1].split("\n")[0].strip()
 
-                # Send to Google Sheets (Bridge handles the new row)
                 try:
                     requests.post(SHEET_URL, json={
                         "type": "FIRST_DRAFT",
@@ -88,9 +85,40 @@ if not st.session_state.submitted:
                         "feedback": feedback_text, 
                         "essay": essay
                     })
-                    st.subheader("Your Grade & Feedback")
-                    st.markdown(feedback_text)
-                    st.session_state.submitted = True
                     st.session_state.original_essay = essay
-                    st.rerun() # Refresh to show the revision area
+                    st.session_state.submitted = True
+                    st.rerun()
                 except Exception as e:
+                    st.error(f"Error connecting to Google Sheets: {e}")
+
+else:
+    # This part shows AFTER the first submission
+    st.success("First draft submitted. Scroll down to see feedback and revise.")
+    
+    # We put the feedback in an expander so it doesn't take up too much space
+    with st.expander("View First Draft Feedback", expanded=True):
+        # We need to re-generate or store the feedback. 
+        # For simplicity in this free version, we ask the AI to re-summarize or show the status.
+        st.info("Please use the feedback provided in the previous step to improve your text.")
+
+    revised_essay = st.text_area("Write your IMPROVED composition here:", value=st.session_state.original_essay, height=350, key="draft2")
+    
+    if st.button("Submit Final Revision"):
+        with st.spinner("Reviewing improvements..."):
+            rev_prompt = f"{SYSTEM_PROMPT}\n\nSUBMISSION: FINAL REVISION. Feedback on improvements only. No grade."
+            response = model.generate_content([rev_prompt, revised_essay])
+            final_feedback = response.text
+            
+            try:
+                requests.post(SHEET_URL, json={
+                    "type": "REVISION",
+                    "group": group, 
+                    "students": student_list, 
+                    "feedback": final_feedback, 
+                    "essay": revised_essay 
+                })
+                st.subheader("Final Feedback on Revision")
+                st.markdown(final_feedback)
+                st.balloons()
+            except Exception as e:
+                st.error(f"Error updating Sheet: {e}")
