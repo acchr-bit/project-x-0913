@@ -139,10 +139,10 @@ st.caption(f"Word count: {word_count}")
 
 # Create the columns for the buttons
 col1, col2 = st.columns(2)
-
-# --- 1. GET FEEDBACK BUTTON (Draft 1) ---
+# --- 1. FIRST FEEDBACK BUTTON AREA ---
+# We only show this button if the student hasn't received feedback yet.
 if not st.session_state.fb1 or st.session_state.fb1 == "The teacher is busy. Try again in 10 seconds.":
-    if col1.button("🔍 Get Feedback", use_container_width=True):
+    if st.button("🔍 Get Feedback", use_container_width=True):
         if not s1 or not essay:
             st.error("Please enter your names and write your essay first.")
         else:
@@ -169,24 +169,21 @@ if not st.session_state.fb1 or st.session_state.fb1 == "The teacher is busy. Try
                 else:
                     st.error(fb)
 
-# --- 2. DISPLAY FIRST FEEDBACK & REVISION BUTTON ---
+# --- 2. DISPLAY FEEDBACK AND SEQUENTIAL BUTTONS ---
 if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try again in 10 seconds.":
     st.markdown("---")
-    st.info(st.session_state.fb1)
+    st.info(st.session_state.fb1) # This shows the first feedback box
 
-    # We only show the Submit Final button IF fb1 exists but fb2 does NOT yet
+    # --- 3. REVISION BUTTON (Appears physically BELOW the first feedback) ---
     if not st.session_state.fb2:
-        # We use col2 here to keep it on the right side of where the Get Feedback button was
-        if col2.button("🚀 Submit Final Revision", use_container_width=True):
+        if st.button("🚀 Submit Final Revision", use_container_width=True):
             with st.spinner("✨ Teacher is reviewing your changes... please wait."):
                 rev_prompt = (
                     f"--- ORIGINAL FEEDBACK ---\n{st.session_state.fb1}\n\n"
                     f"--- NEW REVISED VERSION ---\n{essay}\n\n"
                     f"CRITICAL INSTRUCTIONS:\n"
-                    f"1. Compare NEW VERSION to ORIGINAL FEEDBACK.\n"
-                    f"2. Check if quoted errors were fixed.\n"
-                    f"3. Identify half-fixes or new errors.\n"
-                    f"4. NO new grade. NO names. NO B2."
+                    f"1. Compare NEW VERSION to ORIGINAL FEEDBACK.\n2. Check if quoted errors were fixed.\n"
+                    f"3. Identify half-fixes or new errors.\n4. NO new grade. NO names. NO B2."
                 )
                 fb2 = call_gemini(rev_prompt)
                 st.session_state.fb2 = fb2
@@ -198,7 +195,7 @@ if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try ag
                 st.balloons()
                 st.rerun()
 
-# --- 3. FINAL FEEDBACK DISPLAY ---
+# --- 4. FINAL FEEDBACK (Appears at the very bottom) ---
 if st.session_state.fb2:
     st.success("### ✅ Final Revision Feedback")
     st.write(st.session_state.fb2)
