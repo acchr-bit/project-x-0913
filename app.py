@@ -137,22 +137,20 @@ st.session_state.essay_content = essay
 word_count = len(essay.split())
 st.caption(f"Word count: {word_count}")
 
+# Create the columns for the buttons
 col1, col2 = st.columns(2)
 
-col1, col2 = st.columns(2)
-
-# --- 1. GET FEEDBACK BUTTON ---
-# Only show this button if there is no feedback yet or the teacher was busy
+# --- 1. GET FEEDBACK BUTTON (Draft 1) ---
 if not st.session_state.fb1 or st.session_state.fb1 == "The teacher is busy. Try again in 10 seconds.":
     if col1.button("🔍 Get Feedback", use_container_width=True):
         if not s1 or not essay:
-            st.error("Enter your name and essay.")
+            st.error("Please enter your names and write your essay first.")
         else:
-            with st.spinner("Teacher is marking..."):
+            with st.spinner("Teacher is marking your first draft..."):
                 formatted_points = "\n".join([f"- {p}" for p in REQUIRED_CONTENT_POINTS])
                 full_prompt = (
                     f"{RUBRIC_INSTRUCTIONS}\n\n"
-                    f"REQUIRED CONTENT POINTS FOR THIS TASK:\n{formatted_points}\n\n"
+                    f"REQUIRED CONTENT POINTS:\n{formatted_points}\n\n"
                     f"TASK CONTEXT:\n{task_desc}\n\n"
                     f"STUDENT ESSAY:\n{essay}"
                 )
@@ -171,41 +169,36 @@ if not st.session_state.fb1 or st.session_state.fb1 == "The teacher is busy. Try
                 else:
                     st.error(fb)
 
-# --- 2. DISPLAY FIRST FEEDBACK ---
+# --- 2. DISPLAY FIRST FEEDBACK & REVISION BUTTON ---
 if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try again in 10 seconds.":
     st.markdown("---")
     st.info(st.session_state.fb1)
 
-    # --- 3. SUBMIT REVISION BUTTON (Appears right after the first feedback) ---
-    # Only show the button if they haven't submitted the final revision yet
+    # We only show the Submit Final button IF fb1 exists but fb2 does NOT yet
     if not st.session_state.fb2:
+        # We use col2 here to keep it on the right side of where the Get Feedback button was
         if col2.button("🚀 Submit Final Revision", use_container_width=True):
-            # The spinner is placed right here so it stays under the student's cursor
             with st.spinner("✨ Teacher is reviewing your changes... please wait."):
                 rev_prompt = (
                     f"--- ORIGINAL FEEDBACK ---\n{st.session_state.fb1}\n\n"
                     f"--- NEW REVISED VERSION ---\n{essay}\n\n"
-                    f"CRITICAL INSTRUCTIONS FOR THE EXAMINER:\n"
-                    f"1. You are a strict proofreader. Compare the NEW VERSION to the ORIGINAL FEEDBACK.\n"
-                    f"2. Check if the errors quoted in the first feedback were fixed correctly.\n"
-                    f"3. If a student 'half-fixes' something, identify it as a failed fix.\n"
-                    f"4. Be very specific.\n"
-                    f"5. Do NOT say 'Corrected' unless perfect.\n"
-                    f"6. DO NOT give a new grade. NEVER mention names. NEVER mention B2."
+                    f"CRITICAL INSTRUCTIONS:\n"
+                    f"1. Compare NEW VERSION to ORIGINAL FEEDBACK.\n"
+                    f"2. Check if quoted errors were fixed.\n"
+                    f"3. Identify half-fixes or new errors.\n"
+                    f"4. NO new grade. NO names. NO B2."
                 )
                 fb2 = call_gemini(rev_prompt)
                 st.session_state.fb2 = fb2
                 
                 requests.post(SHEET_URL, json={
-                    "type": "REVISION", 
-                    "Group": group, 
-                    "Students": student_list,
-                    "Final Essay": essay, 
-                    "FB 2": fb2
+                    "type": "REVISION", "Group": group, "Students": student_list,
+                    "Final Essay": essay, "FB 2": fb2
                 })
                 st.balloons()
                 st.rerun()
 
-# --- 4. DISPLAY FINAL FEEDBACK (Appears last at the bottom) ---
+# --- 3. FINAL FEEDBACK DISPLAY ---
 if st.session_state.fb2:
-    st.success(st.session_state.fb2)
+    st.success("### ✅ Final Revision Feedback")
+    st.write(st.session_state.fb2)
