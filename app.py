@@ -22,12 +22,8 @@ You are a British English Examiner. You must follow these 4 RED LINES:
 1. NEVER mention the student's name in any of your feedbacks.
 2. NEVER use the term "B2" or "CEFR" in the feedback.
 3. NEVER provide the corrected version of a mistake. If you give the answer, you fail.
-4. PARAGRAPH RULE: If the student has used even one single line break or empty line (like in an email format), DO NOT mention paragraphs. ONLY complain about paragraphs if the entire composition is one massive block of text with no enters/breaks at all.
-### FEEDBACK STRUCTURE:
-'Adequació, coherència i cohesió (Score: X/4)'
-- Discuss organization: Does the email follow a logical flow (Intro -> Body -> Conclusion)?
-- Paragraphing: If the student uses line breaks but puts all information in one section, suggest they "group specific ideas (like trip activities) together into a dedicated section." 
-- ONLY criticize a "lack of paragraphs" if the text is one massive block or if the transition between ideas is confusing.
+4. ONLY comment on missing paragraphs if the text is literally one single block of text.
+
 ### THE GRADING RULES (Internal use only):
 - CRITERION 1 (0–4 pts): Start 4,0. 
   - Deduct: Genre (-1), Register (-0,5), Paragraphs (-0,5).
@@ -43,10 +39,7 @@ You are a British English Examiner. You must follow these 4 RED LINES:
 Start with 'Overall Impression'. Then use these exact headers:
 
 'Adequació, coherència i cohesió (Score: X/4)'
-- Discuss genre and register.
-- Discuss organization: Does the email follow a logical flow (Intro -> Body -> Conclusion)?
-- Paragraphing: If the student uses line breaks but puts all information in one section, suggest they "group specific ideas (like trip activities) together into a dedicated section." 
-- ONLY criticize a "lack of paragraphs" if the text is one massive block or if the transition between ideas is confusing.
+- Discuss organization, genre, register, and punctuation. 
 - Content: ONLY check for the items in the 'REQUIRED CONTENT POINTS' list. If they are present, do not mention missing details from the Task Context.
 - For punctuation errors, quote the phrase and explain the rule without correcting it.
 - Discuss connectors (quantity and variety).
@@ -74,24 +67,18 @@ if 'fb1' not in st.session_state:
 if 'fb2' not in st.session_state:
     st.session_state.fb2 = ""
 
-# 4. AI CONNECTION (MODIFIED FOR RETRY LOGIC)
+# 4. AI CONNECTION
 def call_gemini(prompt):
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key={API_KEY}"
     headers = {'Content-Type': 'application/json'}
     data = {"contents": [{"parts": [{"text": prompt}]}]}
-    
-    for attempt in range(5):  # Try up to 5 times
+    for attempt in range(3):
         response = requests.post(url, headers=headers, json=data)
         if response.status_code == 200:
             return response.json()['candidates'][0]['content']['parts'][0]['text']
-        elif response.status_code == 429:  # Rate limit error
-            # Wait 4s on 1st fail, 8s on 2nd, 12s on 3rd...
-            time.sleep((attempt + 1) * 4)
+        elif response.status_code == 429:
+            time.sleep(5)
             continue
-        else:
-            time.sleep(2)
-            continue
-            
     return "The teacher is busy. Try again in 10 seconds."
 
 # 5. UI
@@ -151,71 +138,63 @@ word_count = len(essay.split())
 st.caption(f"Word count: {word_count}")
 
 col1, col2 = st.columns(2)
-# --- 1. SETUP UI CONTAINERS ---
-# This placeholder at the top will catch the spinner AND the final result
-top_container = st.empty()
 
-# --- 2. DISPLAY LOGIC (Consolidated at the Top) ---
-with top_container:
-    if st.session_state.fb2:
-        st.success("### ✅ Final Revision Feedback")
-        st.write(st.session_state.fb2)
-        st.markdown("---")
+if col1.button("🔍 Get Feedback"):
+    if not s1 or not essay:
+        st.error("Enter your name and essay.")
+    else:
+        with st.spinner("Teacher is marking..."):
+            # Format the dynamic content points for the AI
+            formatted_points = "\n".join([f"- {p}" for p in REQUIRED_CONTENT_POINTS])
+            
+            full_prompt = (
+                f"{RUBRIC_INSTRUCTIONS}\n\n"
+                f"REQUIRED CONTENT POINTS FOR THIS TASK:\n{formatted_points}\n\n"
+                f"TASK CONTEXT:\n{task_desc}\n\n"
+                f"STUDENT ESSAY:\n{essay}"
+            )
+            fb = call_gemini(full_prompt)
+            
+            mark_search = re.search(r"FINAL MARK:\s*(\d+,?\d*/10)", fb)
+            mark_value = mark_search.group(1) if mark_search else "N/A"
+            
+            st.session_state.fb1 = fb
+            
+            requests.post(SHEET_URL, json={
+                "type": "FIRST", "Group": group, "Students": student_list, 
+                "Task": TASK_TITLE, "Mark": mark_value, "FB 1": fb, 
+                "Draft 1": essay, "Word Count": word_count
+            })
+            st.rerun()
 
-# --- 3. PREVIOUS FEEDBACK (Draft 1) ---
-if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try again in 10 seconds.":
-    header_text = "### 📜 Previous Feedback (Draft 1)" if st.session_state.fb2 else "### 🔍 Original Feedback"
-    st.markdown(header_text)
+if st.session_state.fb1:
+    st.markdown("---")
     st.info(st.session_state.fb1)
+if col2.button("🚀 Submit Final Revision"):
+        with st.spinner("Checking revision..."):
+            rev_prompt = (
+                f"--- ORIGINAL FEEDBACK ---\n{st.session_state.fb1}\n\n"
+                f"--- NEW REVISED VERSION ---\n{essay}\n\n"
+                f"CRITICAL INSTRUCTIONS FOR THE EXAMINER:\n"
+                f"1. You are a strict proofreader. Compare the NEW VERSION to the ORIGINAL FEEDBACK.\n"
+                f"2. Check if the errors quoted in the first feedback were fixed correctly.\n"
+                f"3. If a student 'half-fixes' something (e.g., they fix the grammar but introduce a new spelling mistake like 'travell'), you MUST identify it as a failed fix.\n"
+                f"4. Be very specific. Use phrasing like: 'You attempted to fix X, but you introduced a new spelling error: Y'.\n"
+                f"5. Do NOT say 'Corrected' unless it is 100% perfect.\n"
+                f"6. DO NOT give a new grade. NEVER mention names. NEVER mention B2."
+            )
+            fb2 = call_gemini(rev_prompt)
+            st.session_state.fb2 = fb2
+            
+            requests.post(SHEET_URL, json={
+                "type": "REVISION", 
+                "Group": group, 
+                "Students": student_list,
+                "Final Essay": essay, 
+                "FB 2": fb2
+            })
+            st.balloons()
 
-# --- 4. THE ACTION BUTTONS ---
-col1, col2 = st.columns(2)
+if st.session_state.fb2:
+    st.success(st.session_state.fb2)
 
-# Logic for Draft 1 Button
-if not st.session_state.fb1 or st.session_state.fb1 == "The teacher is busy. Try again in 10 seconds.":
-    if col1.button("🔍 Get Feedback", use_container_width=True):
-        if not s1 or not essay:
-            st.error("Enter your name and essay.")
-        else:
-            with top_container:
-                with st.spinner("📝 Teacher is marking your first draft..."):
-                    formatted_points = "\n".join([f"- {p}" for p in REQUIRED_CONTENT_POINTS])
-                    full_prompt = f"{RUBRIC_INSTRUCTIONS}\n\nPOINTS:\n{formatted_points}\n\nESSAY:\n{essay}"
-                    fb = call_gemini(full_prompt)
-                    
-                    if fb != "The teacher is busy. Try again in 10 seconds.":
-                        mark_search = re.search(r"FINAL MARK:\s*(\d+,?\d*/10)", fb)
-                        mark_value = mark_search.group(1) if mark_search else "N/A"
-                        st.session_state.fb1 = fb
-                        requests.post(SHEET_URL, json={
-                            "type": "FIRST", "Group": group, "Students": student_list, 
-                            "Task": TASK_TITLE, "Mark": mark_value, "FB 1": fb, 
-                            "Draft 1": essay, "Word Count": word_count
-                        })
-                        st.rerun()
-                    else:
-                        st.error(fb)
-
-# Logic for Revision Button
-if st.session_state.fb1 and not st.session_state.fb2:
-    if col2.button("🚀 Submit Final Revision", use_container_width=True):
-        with top_container:
-            with st.spinner("✨ Teacher is reviewing your changes..."):
-                rev_prompt = (
-                    f"--- ORIGINAL FEEDBACK ---\n{st.session_state.fb1}\n\n"
-                    f"--- NEW REVISED VERSION ---\n{essay}\n\n"
-                    f"CRITICAL INSTRUCTIONS FOR THE EXAMINER:\n"
-                    f"1. You are a strict proofreader. Compare the NEW VERSION to the ORIGINAL FEEDBACK.\n"
-                    f"2. Check if the errors quoted in the first feedback were fixed correctly.\n"
-                    f"3. DO NOT give a new grade. NEVER mention names. NEVER mention B2."
-                )
-                fb2 = call_gemini(rev_prompt)
-                st.session_state.fb2 = fb2
-                
-                # Send to Google Sheets
-                requests.post(SHEET_URL, json={
-                    "type": "REVISION", "Group": group, "Students": student_list,
-                    "Final Essay": essay, "FB 2": fb2
-                })
-                st.balloons()
-                st.rerun()
