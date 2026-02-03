@@ -191,16 +191,20 @@ if st.session_state.fb2:
     st.success("### ✅ Final Revision Feedback")
     st.write(st.session_state.fb2)
     st.markdown("---")
+# --- 1. THE FINAL REVISION (Shows at the TOP if it exists) ---
+if st.session_state.fb2:
+    st.success("### ✅ Final Revision Feedback")
+    st.write(st.session_state.fb2)
+    st.markdown("---")
 
-# --- ORIGINAL FEEDBACK (Now appears below) ---
+# --- 2. THE ORIGINAL FEEDBACK (Shows BELOW the revision) ---
 if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try again in 10 seconds.":
-    # If the student hasn't done the revision yet, show the title "Original Feedback"
-    # If they HAVE done it, label it "Previous Feedback"
+    # Logic to change the header if they have already submitted the revision
     header_text = "### 🔍 Original Feedback" if not st.session_state.fb2 else "### 📜 Previous Feedback (Draft 1)"
     st.markdown(header_text)
     st.info(st.session_state.fb1)
     
-    # Show the Submit button only if they haven't submitted the final version yet
+    # Show the Submit button ONLY if they haven't submitted the final version yet
     if not st.session_state.fb2:
         if col2.button("🚀 Submit Final Revision"):
             with st.spinner("Checking revision..."):
@@ -215,7 +219,7 @@ if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try ag
                 fb2 = call_gemini(rev_prompt)
                 st.session_state.fb2 = fb2
                 
-                # Send to Google Sheets
+                # Send the final data to Google Sheets
                 requests.post(SHEET_URL, json={
                     "type": "REVISION", 
                     "Group": group, 
@@ -224,4 +228,4 @@ if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try ag
                     "FB 2": fb2
                 })
                 st.balloons()
-                st.rerun() # This forces the app to refresh and put FB2 at the top
+                st.rerun() # This is the magic step that pushes FB2 to the top
