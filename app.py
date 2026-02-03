@@ -89,38 +89,60 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- JAVASCRIPT SHIELD: Hides Profile and Streamlit Cloud Links ---
+# --- THE "DEEP CLEAN" SHIELD (JAVASCRIPT & CSS) ---
 st.components.v1.html("""
     <script>
-    const hideBadges = () => {
+    const cleanStreamlitUI = () => {
         const parentDoc = window.parent.document;
-        const badges = parentDoc.querySelectorAll('div[class*="viewerBadge"], [data-testid="stStatusWidget"]');
-        badges.forEach(badge => { badge.style.display = 'none'; });
         
-        const links = parentDoc.querySelectorAll('a[href*="streamlit.io"], a[href*="acchr-bit"]');
-        links.forEach(link => { link.style.display = 'none'; });
+        // 1. Target by CSS classes and data attributes
+        const selectors = [
+            'div[class*="viewerBadge"]', 
+            '[data-testid="stStatusWidget"]', 
+            'footer', 
+            '#MainMenu', 
+            'header'
+        ];
+        
+        selectors.forEach(s => {
+            parentDoc.querySelectorAll(s).forEach(el => {
+                el.style.display = 'none';
+                el.style.visibility = 'hidden';
+            });
+        });
+
+        // 2. Target profile and cloud links specifically
+        const profileLinks = parentDoc.querySelectorAll('a[href*="acchr-bit"], a[href*="streamlit.io"]');
+        profileLinks.forEach(link => link.remove());
     };
-    setInterval(hideBadges, 500);
+
+    // MutationObserver to watch for Streamlit re-adding the badge during re-runs
+    const observer = new MutationObserver(cleanStreamlitUI);
+    observer.observe(window.parent.document.body, { childList: true, subtree: true });
+
+    // Initial run
+    cleanStreamlitUI();
     </script>
     """, height=0)
 
-# --- CSS: Hides Icons, Footer, and Locks Sidebar ---
 st.markdown("""
     <style>
+    /* CSS Fallback for standard elements */
     [data-testid="stHeaderActionElements"], .stDeployButton, [data-testid="stToolbar"] {
         display: none !important;
     }
     [data-testid="stSidebarCollapseButton"] {
         display: none !important;
     }
-    #MainMenu {
-        visibility: hidden;
-    }
     [data-testid="stDecoration"], footer {
         display: none !important;
     }
     header {
         background-color: rgba(0,0,0,0) !important;
+    }
+    /* Specifically target the badge container in the main frame */
+    div[class*="viewerBadge"] {
+        display: none !important;
     }
     </style>
     """, unsafe_allow_html=True)
