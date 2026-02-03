@@ -151,63 +151,56 @@ word_count = len(essay.split())
 st.caption(f"Word count: {word_count}")
 
 col1, col2 = st.columns(2)
+# --- 1. SETUP UI CONTAINERS ---
+# This placeholder at the top will catch the spinner AND the final result
+top_container = st.empty()
 
-# --- FIRST FEEDBACK BUTTON (Only shows if no feedback exists yet) ---
+# --- 2. DISPLAY LOGIC (Consolidated at the Top) ---
+with top_container:
+    if st.session_state.fb2:
+        st.success("### ✅ Final Revision Feedback")
+        st.write(st.session_state.fb2)
+        st.markdown("---")
+
+# --- 3. PREVIOUS FEEDBACK (Draft 1) ---
+if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try again in 10 seconds.":
+    header_text = "### 📜 Previous Feedback (Draft 1)" if st.session_state.fb2 else "### 🔍 Original Feedback"
+    st.markdown(header_text)
+    st.info(st.session_state.fb1)
+
+# --- 4. THE ACTION BUTTONS ---
+col1, col2 = st.columns(2)
+
+# Logic for Draft 1 Button
 if not st.session_state.fb1 or st.session_state.fb1 == "The teacher is busy. Try again in 10 seconds.":
-    if col1.button("🔍 Get Feedback"):
+    if col1.button("🔍 Get Feedback", use_container_width=True):
         if not s1 or not essay:
             st.error("Enter your name and essay.")
         else:
-            with st.spinner("Teacher is marking..."):
-                formatted_points = "\n".join([f"- {p}" for p in REQUIRED_CONTENT_POINTS])
-                
-                full_prompt = (
-                    f"{RUBRIC_INSTRUCTIONS}\n\n"
-                    f"REQUIRED CONTENT POINTS FOR THIS TASK:\n{formatted_points}\n\n"
-                    f"TASK CONTEXT:\n{task_desc}\n\n"
-                    f"STUDENT ESSAY:\n{essay}"
-                )
-                fb = call_gemini(full_prompt)
-                
-                # If successful (not the busy message), save it and refresh
-                if fb != "The teacher is busy. Try again in 10 seconds.":
-                    mark_search = re.search(r"FINAL MARK:\s*(\d+,?\d*/10)", fb)
-                    mark_value = mark_search.group(1) if mark_search else "N/A"
+            with top_container:
+                with st.spinner("📝 Teacher is marking your first draft..."):
+                    formatted_points = "\n".join([f"- {p}" for p in REQUIRED_CONTENT_POINTS])
+                    full_prompt = f"{RUBRIC_INSTRUCTIONS}\n\nPOINTS:\n{formatted_points}\n\nESSAY:\n{essay}"
+                    fb = call_gemini(full_prompt)
                     
-                    st.session_state.fb1 = fb
-                    
-                    requests.post(SHEET_URL, json={
-                        "type": "FIRST", "Group": group, "Students": student_list, 
-                        "Task": TASK_TITLE, "Mark": mark_value, "FB 1": fb, 
-                        "Draft 1": essay, "Word Count": word_count
-                    })
-                    st.rerun()
-                else:
-                    st.error(fb) # Shows the "Busy" message but button remains
+                    if fb != "The teacher is busy. Try again in 10 seconds.":
+                        mark_search = re.search(r"FINAL MARK:\s*(\d+,?\d*/10)", fb)
+                        mark_value = mark_search.group(1) if mark_search else "N/A"
+                        st.session_state.fb1 = fb
+                        requests.post(SHEET_URL, json={
+                            "type": "FIRST", "Group": group, "Students": student_list, 
+                            "Task": TASK_TITLE, "Mark": mark_value, "FB 1": fb, 
+                            "Draft 1": essay, "Word Count": word_count
+                        })
+                        st.rerun()
+                    else:
+                        st.error(fb)
 
-# --- DISPLAY FEEDBACK AND REVISION BUTTON ---
-# --- REVISION RESULTS (Now appears first at the top) ---
-if st.session_state.fb2:
-    st.success("### ✅ Final Revision Feedback")
-    st.write(st.session_state.fb2)
-    st.markdown("---")
-# --- 1. THE FINAL REVISION (Shows at the TOP if it exists) ---
-if st.session_state.fb2:
-    st.success("### ✅ Final Revision Feedback")
-    st.write(st.session_state.fb2)
-    st.markdown("---")
-
-# --- 2. THE ORIGINAL FEEDBACK (Shows BELOW the revision) ---
-if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try again in 10 seconds.":
-    # Logic to change the header if they have already submitted the revision
-    header_text = "### 🔍 Original Feedback" if not st.session_state.fb2 else "### 📜 Previous Feedback (Draft 1)"
-    st.markdown(header_text)
-    st.info(st.session_state.fb1)
-    
-    # Show the Submit button ONLY if they haven't submitted the final version yet
-    if not st.session_state.fb2:
-        if col2.button("🚀 Submit Final Revision"):
-            with st.spinner("Checking revision..."):
+# Logic for Revision Button
+if st.session_state.fb1 and not st.session_state.fb2:
+    if col2.button("🚀 Submit Final Revision", use_container_width=True):
+        with top_container:
+            with st.spinner("✨ Teacher is reviewing your changes..."):
                 rev_prompt = (
                     f"--- ORIGINAL FEEDBACK ---\n{st.session_state.fb1}\n\n"
                     f"--- NEW REVISED VERSION ---\n{essay}\n\n"
@@ -219,13 +212,10 @@ if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try ag
                 fb2 = call_gemini(rev_prompt)
                 st.session_state.fb2 = fb2
                 
-                # Send the final data to Google Sheets
+                # Send to Google Sheets
                 requests.post(SHEET_URL, json={
-                    "type": "REVISION", 
-                    "Group": group, 
-                    "Students": student_list,
-                    "Final Essay": essay, 
-                    "FB 2": fb2
+                    "type": "REVISION", "Group": group, "Students": student_list,
+                    "Final Essay": essay, "FB 2": fb2
                 })
                 st.balloons()
-                st.rerun() # This is the magic step that pushes FB2 to the top
+                st.rerun()
