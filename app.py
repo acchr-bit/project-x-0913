@@ -95,11 +95,24 @@ st.set_page_config(page_title="Writing Test", layout="centered", initial_sidebar
 
 st.markdown("""
     <style>
+    /* Hides Streamlit UI elements */
     [data-testid="stHeaderActionElements"], .stDeployButton, [data-testid="stToolbar"], 
     [data-testid="stSidebarCollapseButton"], #MainMenu, [data-testid="stDecoration"], footer {
         display: none !important;
     }
     header { background-color: rgba(0,0,0,0) !important; }
+
+    /* MAKES THE TEXT INSIDE THE WRITING BOX BIGGER */
+    .stTextArea textarea {
+        font-size: 18px !important;
+        line-height: 1.6 !important;
+        font-family: 'Source Sans Pro', sans-serif !important;
+    }
+    
+    /* MAKES THE CAPTION (WORD COUNT) SLIGHTLY LARGER */
+    .stCaption {
+        font-size: 14px !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -115,9 +128,6 @@ with st.sidebar:
     names = [s.strip() for s in [s1, s2, s3, s4] if s.strip()]
     student_list = ", ".join(names)
 
-
-
-
 # Main Essay Area
 # 1. Display the Task Description in a larger font
 st.markdown(f"### 📋 Task Description")
@@ -126,13 +136,6 @@ st.markdown(f"<div style='font-size: 20px; line-height: 1.5; margin-bottom: 20px
 # 2. The Text Area (we use a simple title here or an empty string "")
 essay = st.text_area("Write your essay below:", value=st.session_state.essay_content, height=400)
 st.session_state.essay_content = essay
-
-
-
-
-# Main Essay Area
-# essay = st.text_area(TASK_DESC, value=st.session_state.essay_content, height=400)
-# st.session_state.essay_content = essay
 
 word_count = len(essay.split())
 st.caption(f"Word count: {word_count}")
