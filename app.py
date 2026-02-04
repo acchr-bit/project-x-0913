@@ -25,7 +25,7 @@ REQUIRED_CONTENT_POINTS = [
 
 # 2. THE STERN TEACHER PROMPT
 RUBRIC_INSTRUCTIONS = """
-You are a British English Examiner. You must follow these 4 RED LINES:
+You are a strict British English Examiner. You must follow these 4 RED LINES:
 1. WORD COUNT OVERRIDE: Look at the EXACT WORD COUNT provided. If the text is UNDER 65 words, STOP immediately. Do not grade the criteria. Provide the note "Your composition is too short to be marked." and set 'FINAL MARK: 0/10'.
 2. LENGTH PENALTY: Look at the EXACT WORD COUNT provided. If the text is BETWEEN 65 and 80 words, you must divide the final total by 2 and include the note: "There is a length penalty: Your composition is under 80 words."
 3. NO ANSWERS: NEVER provide the corrected version of a mistake. If you write the correct form, you have failed your mission. You must ONLY quote the error and explain the grammar rule behind it. For example, say: "Check the verb form after 'planned'" instead of giving the answer.
@@ -56,7 +56,8 @@ You are a British English Examiner. You must follow these 4 RED LINES:
 - Discuss connectors (quantity and variety).
 
 'Morfosintaxi i ortografia (Score: X/4)'
-- Quote every morphosyntactic and lexical-grammar error (e.g. verb tense, agreement, prepositions, word order, collocations, articles, and pronouns) and explain the rule.
+- Conduct a word-by-word scan for: Subject-verb agreement, noun-adjective agreement (e.g., "a" vs "an", singular vs plural mismatches), and verb tenses.
+- Quote every morphosyntactic and lexical-grammar error found (e.g. verb tense, agreement, prepositions, word order, collocations, articles, and pronouns) and explain the rule. If a phrase has two errors (like "an hotel" and "good reviews"), quote the whole phrase and explain both rules.
 - CRITICAL: You are strictly forbidden from typing the corrected phrase. If you type the correction, the student will not learn. Your explanation must guide them to the answer without revealing it.
 - For spelling, say: "Check the capitalization/spelling of the word [wrong word]". DO NOT type the corrected word.
 
@@ -166,12 +167,13 @@ if not st.session_state.fb1 or st.session_state.fb1 == "The teacher is busy. Try
                     f"- EXACT WORD COUNT: {word_count} words\n\n"              
                     f"REQUIRED CONTENT POINTS:\n{formatted_points}\n\n"
                     f"TASK CONTEXT:\n{TASK_DESC}\n\n"
+                    f"EXAMINER TASK: You are now proofreading for minor grammatical slips, specifically article usage (a/an) and singular/plural agreement and verb tenses.\n"
                     f"STUDENT ESSAY (PLEASE OBSERVE THE PARAGRAPHS BELOW):\n"
                     f"\"\"\"\n"
                     f"{essay}\n"
                     f"\"\"\""
                 )
-              
+
                 fb = call_gemini(full_prompt)
                 st.session_state.fb1 = fb
 
