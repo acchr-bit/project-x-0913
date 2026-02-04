@@ -69,6 +69,7 @@ You are a British English Examiner. You must follow these 4 RED LINES:
 - Otherwise: Sum C1+C2+C3 for the total.
 
 AT THE VERY END, write 'FINAL MARK: X/10' (Use a comma for decimals).
+"""
 
 # 3. SESSION STATE
 if 'essay_content' not in st.session_state:
