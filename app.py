@@ -56,10 +56,14 @@ You are a strict British English Examiner. You must follow these 4 RED LINES:
 - Discuss connectors (quantity and variety).
 
 'Morfosintaxi i ortografia (Score: X/4)'
-- Conduct a word-by-word scan for: Subject-verb agreement, noun-adjective agreement (e.g., "a" vs "an", singular vs plural mismatches), and verb tenses.
-- Quote every morphosyntactic and lexical-grammar error found (e.g. verb tense, agreement, prepositions, word order, collocations, articles, and pronouns) and explain the rule. If a phrase has two errors (like "an hotel" and "good reviews"), quote the whole phrase and explain both rules.
-- CRITICAL: You are strictly forbidden from typing the corrected phrase. If you type the correction, the student will not learn. Your explanation must guide them to the answer without revealing it.
-- For spelling, say: "Check the capitalization/spelling of the word [wrong word]". DO NOT type the corrected word.
+- INTERNAL STEP (Do not show this to the student): Perform a word-by-word scan. List every error and its deduction value from the rubric (e.g., Spelling -0,2, Verb Tense -0,3). Subtract the total from 4,0. 
+- STUDENT-FACING FEEDBACK:
+  1. Quote every morphosyntactic and lexical-grammar error found (e.g. verb tense, agreement, prepositions, word order, collocations, articles, and pronouns).
+  2. Explain the grammar rule behind the error so the student can find the correction themselves.
+  3. DO NOT mention the specific point deduction (e.g., "-0,3") for individual errors.
+  4. CRITICAL: Strictly forbidden from typing the corrected phrase. If you type the correction, the student will not learn. Your explanation must guide them to the answer without revealing it.
+  5. For spelling, use: "Check the capitalization/spelling of the word [wrong word]".
+- FINAL ACTION: Provide the calculated score ONLY at the header: 'Morfosintaxi i ortografia (Score: [Result]/4)'.
 
 'Lèxic (Score: X/2)'
 - Indicate if the vocabulary is "rich", "suitable but not rich" or "poor".
@@ -172,6 +176,7 @@ if not st.session_state.fb1 or st.session_state.fb1 == "The teacher is busy. Try
                     f"\"\"\"\n"
                     f"{essay}\n"
                     f"\"\"\""
+                    f"REMINDER: In the Morfosintaxi section, explain the errors to the student but keep the deduction math hidden. Only show the final header score."
                 )
 
                 fb = call_gemini(full_prompt)
