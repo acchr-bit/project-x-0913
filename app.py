@@ -76,11 +76,39 @@ if 'fb1' not in st.session_state:
 if 'fb2' not in st.session_state:
     st.session_state.fb2 = ""
 
+
+def call_gemini(prompt):
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key={API_KEY}"
+    headers = {'Content-Type': 'application/json'}
+    # We add "generationConfig" to set the temperature to 0
+    data = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.0,  # This makes the AI much more consistent/deterministic
+            "topP": 0.8,
+            "topK": 10
+        }
+    }
+
+
+
+
+
 # 4. AI CONNECTION
 def call_gemini(prompt):
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key={API_KEY}"
     headers = {'Content-Type': 'application/json'}
-    data = {"contents": [{"parts": [{"text": prompt}]}]}
+    # data = {"contents": [{"parts": [{"text": prompt}]}]}
+    # We add "generationConfig" to set the temperature to 0
+    data = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.0,  # This makes the AI much more consistent/deterministic
+            "topP": 0.8,
+            "topK": 10
+        }
+    }
+  
     for attempt in range(3):
         response = requests.post(url, headers=headers, json=data)
         if response.status_code == 200:
