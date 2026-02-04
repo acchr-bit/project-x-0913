@@ -115,9 +115,24 @@ with st.sidebar:
     names = [s.strip() for s in [s1, s2, s3, s4] if s.strip()]
     student_list = ", ".join(names)
 
+
+
+
 # Main Essay Area
-essay = st.text_area(TASK_DESC, value=st.session_state.essay_content, height=400)
+# 1. Display the Task Description in a larger font
+st.markdown(f"### 📋 Task Description")
+st.markdown(f"<div style='font-size: 20px; line-height: 1.5; margin-bottom: 20px;'>{TASK_DESC}</div>", unsafe_allow_html=True)
+
+# 2. The Text Area (we use a simple title here or an empty string "")
+essay = st.text_area("Write your essay below:", value=st.session_state.essay_content, height=400)
 st.session_state.essay_content = essay
+
+
+
+
+# Main Essay Area
+# essay = st.text_area(TASK_DESC, value=st.session_state.essay_content, height=400)
+# st.session_state.essay_content = essay
 
 word_count = len(essay.split())
 st.caption(f"Word count: {word_count}")
