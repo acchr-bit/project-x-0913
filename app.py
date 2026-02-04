@@ -56,7 +56,9 @@ You are a British English Examiner. You must follow these 4 RED LINES:
 - Discuss connectors (quantity and variety).
 
 'Morfosintaxi i ortografia (Score: X/4)'
-- Quote every grammar error and explain the rule.
+#- Quote every grammar error and explain the rule.
+#- Identify and quote all morphosyntactic and lexical-grammar errors (e.g., verb tense, agreement, prepositions, word order, and collocations), and explain the underlying rule for each.
+- Provide a categorized list of all morphosyntactic and lexical-grammar errors (e.g. verb tense, agreement, prepositions, word order, collocations, articles, and pronouns), quoting each error and explaining the relevant rule for each.
 - For spelling, say: "Check the capitalization/spelling of the word [wrong word]". DO NOT type the corrected word.
 
 'Lèxic (Score: X/2)'
@@ -130,7 +132,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("📝 Writing Test")
+st.title("📝 Writing")
 
 with st.sidebar:
     st.header("Student Info")
