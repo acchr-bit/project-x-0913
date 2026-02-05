@@ -275,31 +275,50 @@ if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try ag
     """, unsafe_allow_html=True)
 
 # --- 3. REVISION BUTTON ---
-if not st.session_state.fb2:
-    if st.button("🚀 Submit Final Revision", use_container_width=True):
-        with st.spinner("✨ Teacher is reviewing your changes..."):
-            rev_prompt = (
-                f"{RUBRIC_INSTRUCTIONS}\n\n"
-                f"--- ORIGINAL FEEDBACK ---\n{st.session_state.fb1}\n\n"
-                f"--- NEW REVISED VERSION ---\n{essay}\n\n"
-                f"REVISION PROTOCOL:\n"
-                f"1. YOU ARE A RIGOROUS EXAMINER. Compare the NEW VERSION against the ORIGINAL FEEDBACK word-by-word.\n"
-                f"2. DO NOT HALUCINATE. If a student fixed an error (e.g., changed 'aeroline' to 'airline' or 'an' to 'a'), you MUST move it to the Corrected section.\n"
-                f"3. DO NOT GIVE ANSWERS. Even for uncorrected errors, just explain the rule.\n"
-                f"4. Check for 'Noa' (capitalization), 'First of all,' (comma), and 'important' (spelling).\n\n"
-                f"STRICT FORMATTING INSTRUCTIONS:\n"
-                f"Start with a blank line. Use '#####' for headers. Put a blank line BETWEEN sections.\n\n"
-                f"##### **Corrected Errors**\n\n"
-                f"(List fixed items here)\n\n"
-                f"---\n\n"
-                f"##### **Uncorrected Errors**\n\n"
-                f"(List persistent items here)\n\n"
-                f"---\n\n"
-                f"##### **New Errors Introduced**\n\n"
-                f"(List new mistakes here or write 'None found.')"
-            )
-            
-            fb2 = call_gemini(rev_prompt)
+        if not st.session_state.fb2:
+            if st.button("🚀 Submit Final Revision", use_container_width=True):
+                with st.spinner("✨ Teacher is reviewing your changes..."):
+                    rev_prompt = (
+                        f"{RUBRIC_INSTRUCTIONS}\n\n"
+                        f"--- ORIGINAL FEEDBACK ---\n{st.session_state.fb1}\n\n"
+                        f"--- NEW REVISED VERSION ---\n{essay}\n\n"
+                        f"REVISION PROTOCOL:\n"
+                        f"1. YOU ARE A RIGOROUS EXAMINER. Compare the NEW VERSION against the ORIGINAL FEEDBACK word-by-word.\n"
+                        f"2. DO NOT HALUCINATE. If a student fixed an error (e.g., changed 'aeroline' to 'airline'), you MUST move it to the Corrected section.\n"
+                        f"3. DO NOT GIVE ANSWERS. Even for uncorrected errors, just explain the rule.\n\n"
+                        f"STRICT FORMATTING INSTRUCTIONS:\n"
+                        f"Start with a blank line. Use '###' for headers. Put a blank line BETWEEN sections.\n\n"
+                        f"### **Corrected Errors**\n\n"
+                        f"(List fixed items here)\n\n"
+                        f"---\n\n"
+                        f"### **Uncorrected Errors**\n\n"
+                        f"(List persistent items here)\n\n"
+                        f"---\n\n"
+                        f"### **New Errors Introduced**\n\n"
+                        f"(List new mistakes here or write 'None found.')"
+                    )
+                    
+                    fb2 = call_gemini(rev_prompt)
+                    
+                    if fb2 != "The teacher is busy. Try again in 10 seconds.":
+                        st.session_state.fb2 = fb2
+                        # The Google Sheets post must also be indented correctly
+                        requests.post(SHEET_URL, json={
+                            "type": "REVISION", 
+                            "Group": group, 
+                            "Students": student_list,
+                            "Task": TASK_DESC,
+                            "Mark": "REVISED",
+                            "Draft 1": "---",
+                            "FB 1": "---",
+                            "Final Essay": essay,
+                            "FB 2": fb2,
+                            "Word Count": word_count
+                        })
+                        st.balloons()
+                        st.rerun()
+                    else:
+                        st.error(fb2)
                 
                 if fb2 != "The teacher is busy. Try again in 10 seconds.":
                     st.session_state.fb2 = fb2
