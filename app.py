@@ -93,6 +93,7 @@ You are a meticulous British English Examiner. You grade according to strict mat
 2. 'Overall Impression: ' [Write a brief introductory paragraph here]
 
 ---
+
 3. Use the exact format for the following headers:
 ###### **Adequació, coherència i cohesió (Score: X/4)**
 * Discuss organization, genre, register, and punctuation. 
@@ -109,7 +110,9 @@ You are a meticulous British English Examiner. You grade according to strict mat
 
 ###### **Lèxic (Score: X/2)**
 * Indicate if vocabulary is "rich", "suitable but not rich" or "poor".
+
 ---
+
 ###### **FINAL MARK: X/10** (Use a comma for decimals, e.g., 4,6/10)
 
 """
