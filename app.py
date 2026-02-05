@@ -276,14 +276,21 @@ if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try ag
         if st.button("🚀 Submit Final Revision", use_container_width=True):
             with st.spinner("✨ Teacher is reviewing your changes... please wait."):
                 rev_prompt = (
+                    f"{RUBRIC_INSTRUCTIONS}\n\n"
+                    f"--- TASK ---\n"
+                    f"Compare the NEW REVISED VERSION against the ORIGINAL FEEDBACK.\n\n"
                     f"--- ORIGINAL FEEDBACK ---\n{st.session_state.fb1}\n\n"
                     f"--- NEW REVISED VERSION ---\n{essay}\n\n"
                     f"- EXACT WORD COUNT: {word_count} words\n\n"
-                    f"CRITICAL INSTRUCTIONS:\n"
-                    f"1. Compare NEW VERSION to ORIGINAL FEEDBACK to see if previous errors were fixed.\n"
-                    f"2. IMPORTANT: Scan the NEW VERSION for any NEW grammar, spelling, or punctuation errors introduced during the rewrite.\n"
-                    f"3. Mention both the improvements AND any new issues found.\n"
-                    f"4. NO new grade. NO names. NO B2."
+                    f"CRITICAL INSTRUCTIONS:\n"              
+                    f"CRITICAL EXAMINER RULES FOR REVISION:\n"
+                    f"1. Check if the student fixed the errors quoted in the Original Feedback.\n"
+                    f"2. DO NOT provide the correct version. If they still have an error, explain the rule again.\n"
+                    f"3. If they fixed an error, simply state: 'The error regarding [grammar point] has been resolved.'\n"
+                    f"4. IMPORTANT: Scan the NEW VERSION for any NEW grammar, spelling, or punctuation errors introduced during the rewrite.\n"
+                    f"5. Mention both the improvements AND any new issues found.\n"              
+                    f"6. Maintain the 3 headers (Adequació, Morfosintaxi, Lèxic) but DO NOT give a new grade.\n"
+                    f"7. NO NAMES. NO B2/CEFR."
                 )
               
             #    rev_prompt = (
