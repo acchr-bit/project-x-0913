@@ -88,13 +88,12 @@ You are a meticulous British English Examiner. You grade according to strict mat
 7. Use a comma for decimals.
 8. ENSURE math is hidden from the sections below.
 
-### FEEDBACK STRUCTURE:
-CRITICAL: Do NOT list point values (e.g., -0.5, -0.2) or math equations in this section. The student must only see the final Score in the header and the grammatical explanations. Keep all math inside the INTERNAL WORKSPACE.
-1. **Overall Impression: ** [Paragraph text here]
+### FEEDBACK STRUCTURE (PUBLIC):
+- CRITICAL: Do NOT list point values (e.g., -0.5, -0.2) or math equations in this section. The student must only see the final Score in the header and the grammatical explanations. Keep all math inside the INTERNAL WORKSPACE.
+##### **Overall Impression**
+[Write a brief introductory paragraph here]
 
 ---
-
-2. Use the exact formatting below for the following sections. Ensure there is a blank line between the header and the bullet points:
 
 ##### **Adequació, coherència i cohesió (Score: X/4)**
 * Discuss organization, genre, register, and punctuation. 
@@ -112,7 +111,7 @@ CRITICAL: Do NOT list point values (e.g., -0.5, -0.2) or math equations in this 
 ##### **Lèxic (Score: X/2)**
 * Indicate if vocabulary is "rich", "suitable but not rich" or "poor".
 ---
-###### **FINAL MARK: X/10**
+###### **FINAL MARK: X/10** (Use a comma for decimals, e.g., 4,6/10)
 
 """
 
@@ -228,12 +227,11 @@ STUDENT ESSAY:
 \"\"\"
 
 FINAL EXECUTION COMMANDS:
-1. STRICT RULE: The "INTERNAL WORKSPACE" and "FINAL GRADE CALCULATION" steps are for your logic only. Do NOT include them in the final output.
-2. The student's response must BEGIN with "Overall Impression" and END with "FINAL MARK".
-3. Do NOT show the addition (C1+C2+C3) or the subtraction (4.0 - 0.5).
-4. Do NOT use the header "Final Grade Calculation" in the output.
-5. If a penalty for word count (< 80) is applied, mention the penalty in text but only show the final divided result in the MARK.
-
+1. STRICT RULE: Complete this step silently. NEVER include any text from the 'INTERNAL WORKSPACE' or 'DEDUCTIONS' or "FINAL GRADE CALCULATION" in your final response.
+2. PUBLIC FEEDBACK: your response must BEGIN with "Overall Impression" and END with "FINAL MARK".
+3. DO NOT mention point values (e.g., -0.5), math equations, or error lists in the public feedback.
+4. If a word count penalty is applied, state "There is a length penalty" without showing the division math.
+5. STOPSIGN: The very last thing you write must be the FINAL MARK.
 """
                 fb = call_gemini(full_prompt)
 
