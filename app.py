@@ -196,7 +196,7 @@ st.markdown(f"### 📋 Task Description")
 st.markdown(f"<div style='font-size: 20px; line-height: 1.5; margin-bottom: 20px;'>{TASK_DESC}</div>", unsafe_allow_html=True)
 
 # 2. The Text Area (we use a simple title here or an empty string "")
-essay = st.text_area("Write your essay below:", value=st.session_state.essay_content, height=400)
+essay = st.text_area("Write your composition below:", value=st.session_state.essay_content, height=400)
 st.session_state.essay_content = essay
 
 word_count = len(essay.split())
@@ -206,9 +206,9 @@ st.caption(f"Word count: {word_count}")
 if not st.session_state.fb1 or st.session_state.fb1 == "The teacher is busy. Try again in 10 seconds.":
     if st.button("🔍 Get Feedback", use_container_width=True):
         if not s1 or not essay:
-            st.error("Please enter your name and write your essay first.")
+            st.error("Please enter your name and write your composition first.")
         else:
-            with st.spinner("Teacher is marking your first draft..."):
+            with st.spinner("Teacher is marking your composition..."):
                 formatted_points = "\n".join([f"- {p}" for p in REQUIRED_CONTENT_POINTS])
                 
                 full_prompt = f"""
