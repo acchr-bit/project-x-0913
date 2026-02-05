@@ -196,7 +196,7 @@ st.markdown(f"### 📋 Task Description")
 st.markdown(f"<div style='font-size: 20px; line-height: 1.5; margin-bottom: 20px;'>{TASK_DESC}</div>", unsafe_allow_html=True)
 
 # 2. The Text Area (we use a simple title here or an empty string "")
-essay = st.text_area("Write your composition below:", value=st.session_state.essay_content, height=400)
+essay = st.text_area("Write your composition below:", value=st.session_state.essay_content, height=500)
 st.session_state.essay_content = essay
 
 word_count = len(essay.split())
