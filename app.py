@@ -282,20 +282,21 @@ if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try ag
                     f"{RUBRIC_INSTRUCTIONS}\n\n"
                     f"--- ORIGINAL FEEDBACK ---\n{st.session_state.fb1}\n\n"
                     f"--- NEW REVISED VERSION ---\n{essay}\n\n"
-                    f"CRITICAL EXAMINER RULES FOR REVISION:\n"
-                    f"1. ANALYZE: Compare the NEW REVISED VERSION against the ORIGINAL FEEDBACK.\n"
+                    f"EXAMINER REVISION PROTOCOL:\n"
+                    f"1. YOU ARE A STRICT EXAMINER.: Compare the NEW REVISED VERSION against the ORIGINAL FEEDBACK.\n"
                     f"2. NO ANSWERS: Do NOT provide the correct version of any error. Only explain the rule.\n"
-                    f"3. FORMAT: Organize your response into exactly these three sections:\n\n"
-                    f"##### **Corrected Errors**\n"
-                    f"- List the errors from the original feedback that have been successfully resolved.\n\n"
-                    f"##### **Uncorrected Errors**\n"
-                    f"- List the errors from the original feedback that still persist. Explain the rule again without giving the answer.\n\n"
-                    f"##### **New Errors Introduced**\n"
-                    f"- List any brand new grammar, spelling, or punctuation errors found in the revised text that were not in the first draft.\n\n"
-                    f"4. NO NEW GRADE. NO NAMES. NO B2/CEFR.\n"
-                    f"5. If a section has no errors (e.g., no new errors were introduced), write 'None found.' under that header."
+                    f"3. VERIFY NEW ERRORS: Only list a 'New Error' if it is a genuine grammatical mistake that was NOT in the first draft. If a phrase is correct (e.g., 'finish having dinner' or 'First of all,'), do NOT flag it.\n\n"
+                    f"FORMAT YOUR OUTPUT EXACTLY LIKE THIS (Include the dashes and line breaks):\n\n"
+                    f"### **Corrected Errors**\n"
+                    f"(List improvements here or write 'None'.)\n\n"
+                    f"---\n\n"
+                    f"### **Uncorrected Errors**\n"
+                    f"(List original errors still present or write 'None'.)\n\n"
+                    f"---\n\n"
+                    f"### **New Errors Introduced**\n"
+                    f"(List genuine new mistakes or write 'None found'.)\n"
                 )
-                           
+             
                 fb2 = call_gemini(rev_prompt)
                 
                 if fb2 != "The teacher is busy. Try again in 10 seconds.":
