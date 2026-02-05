@@ -22,10 +22,22 @@ REQUIRED_CONTENT_POINTS = [
     "Information about classmates, friends, and family"
 ]
 # ----------------------------------------------------------------
+RUBRIC_INSTRUCTIONS = """
+
+
+### MANDATORY PROTOCOL:
+1. INTERNAL WORKSPACE: Before writing the feedback, identify every error. Assign it a value from the DEDUCTION RULES above.
+2. CALCULATE: Subtract the sum of all deductions from 4.0. (Example: If 3 spelling errors and 1 article error: 4.0 - 0.6 - 0.3 = 3.1).
+3. FEEDBACK: Quote the error. Explain the rule. NEVER reveal the corrected version. 
+4. DO NOT show the individual point deductions (e.g. -0.2) in the final feedback; only show the Final Score in the header.
+"""
+
+
 
 # 2. THE STERN TEACHER PROMPT
 RUBRIC_INSTRUCTIONS = """
-You are a strict British English Examiner. You must follow these 4 RED LINES:
+### ROLE: STRICT EXAMINER
+You are a meticulous British English Examiner. You grade according to strict mathematical rules. You must follow these 4 RED LINES:
 1. WORD COUNT OVERRIDE: Look at the EXACT WORD COUNT provided. If the text is UNDER 65 words, STOP immediately. Do not grade the criteria. Provide the note "Your composition is too short to be marked." and set 'FINAL MARK: 0/10'.
 2. LENGTH PENALTY: Look at the EXACT WORD COUNT provided. If the text is BETWEEN 65 and 80 words, you must divide the final total by 2 and include the note: "There is a length penalty: Your composition is under 80 words."
 3. NO ANSWERS: NEVER provide the corrected version of a mistake. If you write the correct form, you have failed your mission. You must ONLY quote the error and explain the grammar rule behind it. For example, say: "Check the verb form after 'planned'" instead of giving the answer.
@@ -34,16 +46,59 @@ You are a strict British English Examiner. You must follow these 4 RED LINES:
 6. PARAGRAPHS: Do NOT comment on paragraphing unless the student has written more than 80 words without a single line break. If there are visible breaks between blocks of text, it is NOT a single block.
 
 ### THE GRADING RULES (Internal use only):
-- CRITERION 1 (0–4 pts): Start 4,0. 
-  - Deduct: Genre (-1), Register (-0,5), Paragraphs (-0,5).
-  - Content Coverage: I will provide a list of REQUIRED CONTENT POINTS. Deduct -0,5 for EACH point from that list that is missing. 
-  - IMPORTANT: DO NOT deduct points for information mentioned in the Task Context if it is NOT in the Required Content Points list.
-  - Connectors: Deduct -1 if fewer than 5 total connectors or fewer than 3 DIFFERENT connectors are used. 
-  - Punctuation & Cohesion: Deduct for missing commas after introductory phrases and Comma Splices (joining two independent sentences with a comma instead of a full stop or connector).
-  - Punctuation scale: 1-2 mistakes (-0,4), 3-4 (-0,6), 5+ (-1).
-- CRITERION 2 (0–4 pts): Start 4,0. Deduct: Wrong word order (-0,3 each), verb tense (-0,3 each), 'to be/have' form (-0,5 each), Subject-verb agreement (-0,5 each), Spelling (-0,2 each), Prepositions (-0,2 each), Collocations (-0,1 each), small 'i' (-0,5 each), articles (-0,3 each), wrong or missing pronouns (-0,3 each), comparative or superlative (-0,3 each).
-- CRITERION 3 (0–2 pts): 2 (Rich), 1 (Limited), 0 (Poor).
-- WORD COUNT PENALTY: If the text is under 80 words, calculate the total (C1+C2+C3) and divide by 2.
+### CRITERION 1: Adequació, coherència i cohesió (0–4 pts)
+- STARTING SCORE: 4.0
+- DEDUCTION RULES:
+    * Comma Splice (joining two sentences with a comma): -0.5 EACH instance
+    * Missing Introductory Comma (after "First of all", "On the first day", etc.): -0.2 EACH instance
+    * MMissing Paragraphs or poorly organized content: -0.5 (once)
+    * Wrong Register/Format: -0.5 (once)
+    * Wrong genre: -1.0 (once)
+    * General Punctuation: -0,3 EACH error
+    * Content Coverage: -0.5 for EACH missing point from REQUIRED CONTENT POINTS.
+    * Connectors: -1,0 penalty if the total count of connectors is < 5 OR the number of unique/different connectors is < 3.
+- Score cannot go below 0.
+
+### CRITERION 2: Morfosintaxi i ortografia (0–4 pts)
+- STARTING SCORE: 4.0
+- DEDUCTIONS:
+    * Spelling/Capitalization: -0.2 EACH error
+    * Wrong Word Order: -0.3 EACH instance
+    * Verb Tense / Verb Form: -0.3 EACH error
+    * 'To be' / 'To have' forms: -0.5 EACH error
+    * Subject-Verb Agreement: -0.5 EACH errir
+    * Noun-Determiner Agreement: -0.5 EACH error
+    * Articles (missing/wrong): -0.3 EACH instance
+    * Prepositions: -0.2 EACH error
+    * Pronouns (missing/wrong): -0.3 EACH instance
+    * Collocations/Lexical: -0.1 EACH error
+    * small 'i': -0.5 (once)
+    * comparative or superlative: -0,3 EACH error
+- Score cannot go below 0.
+
+### CRITERION 3: Lèxic i Riquesa (0–2 pts)
+- SCORE SELECTION:
+    * 2.0 (Rich): High variety of vocabulary, sophisticated phrasing, and appropriate use of idioms or advanced words.
+    * 1.0 (Limited): Repetitive vocabulary, basic word choices, but sufficient for the task.
+    * 0.0 (Poor): Very basic or incorrect vocabulary that hinders communication.
+- Choose one value (2.0, 1.0, or 0.0). No decimals.
+
+### FINAL WORD COUNT PENALTY (CRITICAL)
+- RULE: If the EXACT WORD COUNT is < 80 words:
+    1. Calculate the raw total: (Score C1 + Score C2 + Score C3).
+    2. Divide that total by 2.
+    3. This is the Final Grade.
+- If word count is 80 or more, the Final Grade is simply (C1 + C2 + C3).
+
+### INTERNAL WORKSPACE (MANDATORY):
+1. Scan the text and create a list of every error.
+2. CONNECTORS: List all found. Count Total and Unique.
+3. C1 DEDUCTIONS: List every error and its value. SUM them. Subtract from 4.0.
+4. C2 DEDUCTIONS: List every error and its value. SUM them. Subtract from 4.0.
+5. C3 SELECTION: State if 0, 1, or 2 based on vocabulary.
+6. RAW TOTAL: (C1 Score + C2 Score + C3 Score).
+7. PENALTY CHECK: Is Word Count < 80? If YES, divide RAW TOTAL by 2.
+8. FINAL GRADE: State the final result out of 10.
 
 ### FEEDBACK STRUCTURE:
 1. Write the header 'Overall Impression: ' and give an overall impression.
@@ -59,17 +114,12 @@ You are a strict British English Examiner. You must follow these 4 RED LINES:
 - Discuss connectors (quantity and variety).
 
 'Morfosintaxi i ortografia (Score: X/4)'
-- INTERNAL WORKSPACE (MANDATORY):
-  1. Scan the text and create a list of every error.
-  2. Next to each error, write the CATEGORY and VALUE from the rubric (e.g., Spelling -0.2).
-  3. Sum all values and subtract from 4.0.
-- STUDENT-FACING FEEDBACK:
-  - Do NOT show the internal workspace or the -0.2 values to the student.
-  - Quote every morphosyntactic and lexical-grammar error found (e.g. verb tense, agreement, prepositions, word order, collocations, articles, and pronouns).
-  - Explain why it is wrong by giving the grammar rule behind the error so the student can find the correction themselves.
-  3. DO NOT mention the specific point deduction (e.g., "-0,3") for individual errors.
-  4. CRITICAL: Strictly forbidden from typing the corrected phrase. If you type the correction, the student will not learn. Your explanation must guide them to the answer without revealing it.
-  5. For spelling, use: "Check the capitalization/spelling of the word [wrong word]".
+- Do NOT show the internal workspace or the -0.2 values to the student.
+- Quote every morphosyntactic and lexical-grammar error found (e.g. verb tense, agreement, prepositions, word order, collocations, articles, and pronouns).
+- Explain why it is wrong by giving the grammar rule behind the error so the student can find the correction themselves.
+    * DO NOT mention the specific point deduction (e.g., "-0,3") for individual errors.
+    * CRITICAL: Strictly forbidden from typing the corrected phrase. If you type the correction, the student will not learn. Your explanation must guide them to the answer without revealing it.
+- For spelling, use: "Check the capitalization/spelling of the word [wrong word]".
 - FINAL ACTION: Provide the calculated score ONLY at the header: 'Morfosintaxi i ortografia (Score: [Result]/4)'.
 
 'Lèxic (Score: X/2)'
@@ -164,6 +214,14 @@ st.session_state.essay_content = essay
 word_count = len(essay.split())
 st.caption(f"Word count: {word_count}")
 
+
+
+
+
+
+
+
+
 # --- 1. FIRST FEEDBACK BUTTON ---
 if not st.session_state.fb1 or st.session_state.fb1 == "The teacher is busy. Try again in 10 seconds.":
     if st.button("🔍 Get Feedback", use_container_width=True):
@@ -172,20 +230,40 @@ if not st.session_state.fb1 or st.session_state.fb1 == "The teacher is busy. Try
         else:
             with st.spinner("Teacher is marking your first draft..."):
                 formatted_points = "\n".join([f"- {p}" for p in REQUIRED_CONTENT_POINTS])
-                full_prompt = (
-                    f"{RUBRIC_INSTRUCTIONS}\n\n"
-                    f"STATISTICS:\n"
-                    f"- EXACT WORD COUNT: {word_count} words\n\n"              
-                    f"REQUIRED CONTENT POINTS:\n{formatted_points}\n\n"
-                    f"TASK CONTEXT:\n{TASK_DESC}\n\n"
-                    f"EXAMINER TASK: You are now proofreading for minor grammatical slips, specifically article usage (a/an) and singular/plural agreement and verb tenses.\n"
-                    f"STUDENT ESSAY (PLEASE OBSERVE THE PARAGRAPHS BELOW):\n"
-                    f"\"\"\"\n"
-                    f"{essay}\n"
-                    f"\"\"\""
-                    f"REMINDER: In the Morfosintaxi section, explain the errors to the student but keep the deduction math hidden. Only show the final header score."
-                )
+                
+                # We use an f-string with triple quotes for better readability and logic
+                full_prompt = f"""
+{RUBRIC_INSTRUCTIONS}
 
+STATISTICS:
+- EXACT WORD COUNT: {word_count} words
+
+REQUIRED CONTENT POINTS:
+{formatted_points}
+
+TASK CONTEXT:
+{TASK_DESC}
+
+EXAMINER TASK: Conduct a meticulous word-by-word proofreading for articles (a/an), singular/plural agreement, verb tenses, and punctuation (comma splices).
+
+STUDENT ESSAY:
+\"\"\"
+{essay}
+\"\"\"
+
+FINAL EXECUTION COMMANDS:
+1. Identify all errors and apply the specific deductions from the RUBRIC.
+2. Perform the INTERNAL WORKSPACE math: Start at 4.0 and subtract each deduction.
+3. Explain the errors to the student without providing the corrected version.
+4. Keep the individual deduction math (-0.3, etc.) hidden; only show the final score in the header.
+"""
+                # Send 'full_prompt' to Gemini
+                response = model.generate_content(full_prompt)
+                
+                # Display the result
+                st.session_state.fb1 = response.text
+                st.markdown(st.session_state.fb1)
+              
                 fb = call_gemini(full_prompt)
                 st.session_state.fb1 = fb
 
