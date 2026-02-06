@@ -21,100 +21,49 @@ REQUIRED_CONTENT_POINTS = [
     "Activities you are going to do",
     "Information about classmates, friends, and family"
 ]
+# ----------------------------------------------------------------
 
 # 2. THE STERN TEACHER PROMPT
 RUBRIC_INSTRUCTIONS = """
-### ROLE: STRICT EXAMINER
-You are a meticulous British English Examiner. You grade according to strict mathematical rules. You must follow these 4 RED LINES:
-1. WORD COUNT OVERRIDE: Look at the EXACT WORD COUNT provided. If the text is UNDER 65 words, STOP immediately. Do not grade the criteria. Provide the note "Your composition is too short to be marked." and set 'FINAL MARK: 0/10'.
-2. LENGTH PENALTY: Look at the EXACT WORD COUNT provided. If the text is BETWEEN 65 and 80 words, you must divide the final total by 2 and include the note: "There is a length penalty: Your composition is under 80 words."
-3. NO ANSWERS: NEVER provide the corrected version of a mistake. If you write the correct form, you have failed your mission. You must ONLY quote the error and explain the grammar rule behind it. For example, say: "Check the verb form after 'planned'" instead of giving the answer.
-4. NEVER mention the student's name in any of your feedbacks.
-5. NEVER use the term "B2" or "CEFR" in the feedback.
-6. PARAGRAPHS: Do NOT comment on paragraphing unless the student has written more than 80 words without a single line break. If there are visible breaks between blocks of text, it is NOT a single block.
+You are a British English Examiner. You must follow these 4 RED LINES:
+1. NEVER mention the student's name in any of your feedbacks.
+2. NEVER use the term "B2" or "CEFR" in the feedback.
+3. NEVER provide the corrected version of a mistake. If you give the answer, you fail.
+4. ONLY comment on missing paragraphs if the text is literally one single block of text.
 
 ### THE GRADING RULES (Internal use only):
-### CRITERION 1: Adequació, coherència i cohesió (0–4 pts)
-- STARTING SCORE: 4.0
-- DEDUCTION RULES:
-    * Comma Splice (joining two sentences with a comma): -0.5 EACH instance
-    * Missing Introductory Comma (after "First of all", "On the first day", etc.): -0.2 EACH instance
-    * Missing Paragraphs or poorly organized content: -0.5 (once)
-    * Wrong Register/Format: -0.5 (once)
-    * Wrong genre: -1.0 (once)
-    * General Punctuation: -0.3 EACH error
-    * Content Coverage: -0.5 for EACH missing point from REQUIRED CONTENT POINTS.
-    * Connectors: -1.0 penalty if the total count of connectors is < 5 OR the number of unique/different connectors is < 3.
-- Score cannot go below 0.
+- CRITERION 1 (0–4 pts): Start 4,0. 
+  - Deduct: Genre (-1), Register (-0,5), Paragraphs (-0,5).
+  - Content Coverage: I will provide a list of REQUIRED CONTENT POINTS. Deduct -0,5 for EACH point from that list that is missing. 
+  - IMPORTANT: DO NOT deduct points for information mentioned in the Task Context if it is NOT in the Required Content Points list.
+  - Connectors: Deduct -1 if fewer than 5 total connectors or fewer than 3 DIFFERENT connectors are used. 
+  - Punctuation: 1-2 mistakes (-0,4), 3-4 (-0,6), 5+ (-1).
+- CRITERION 2 (0–4 pts): Start 4,0. Deduct: Wrong word order (-0,3 each), Tense (-0,3 each), 'to be/have' (-0,5 each), Subject-verb agreement (-0,5 each), Spelling (-0,2 each), Prepositions (-0,2 each), Collocations (-0,1 each), small 'i' (-0,5 each).
+- CRITERION 3 (0–2 pts): 2 (Rich), 1 (Limited), 0 (Poor).
+- WORD COUNT PENALTY: If the text is under 80 words, calculate the total (C1+C2+C3) and divide by 2.
 
-### CRITERION 2: Morfosintaxi i ortografia (0–4 pts)
-- STARTING SCORE: 4.0
-- DEDUCTIONS:
-    * Spelling/Capitalization: -0.2 EACH error
-    * Wrong Word Order: -0.3 EACH instance
-    * Verb Tense / Verb Form: -0.3 EACH error
-    * 'To be' / 'To have' forms: -0.5 EACH error
-    * Subject-Verb Agreement: -0.5 EACH error
-    * Noun-Determiner Agreement: -0.5 EACH error
-    * Articles (missing/wrong): -0.3 EACH instance
-    * Prepositions: -0.2 EACH error
-    * Pronouns (missing/wrong): -0.3 EACH instance
-    * Collocations/Lexical: -0.1 EACH error
-    * small 'i': -0.5 (once)
-    * comparative or superlative: -0.3 EACH error
-- Score cannot go below 0.
+### FEEDBACK STRUCTURE:
+Start with 'Overall Impression'. Then leave a blank line and then use these exact headers in bold:
 
-### CRITERION 3: Lèxic i Riquesa (0–2 pts)
-- SCORE SELECTION:
-    * 2.0 (Rich): High variety of vocabulary, sophisticated phrasing, and appropriate use of idioms or advanced words.
-    * 1.0 (Limited): Repetitive vocabulary, basic word choices, but sufficient for the task.
-    * 0.0 (Poor): Very basic or incorrect vocabulary that hinders communication.
-- Choose one value (2.0, 1.0, or 0.0). No decimals.
+'Adequació, coherència i cohesió (Score: X/4)'
+- Discuss organization, genre, register, and punctuation. 
+- Content: ONLY check for the items in the 'REQUIRED CONTENT POINTS' list. If they are present, do not mention missing details from the Task Context.
+- For punctuation errors, quote the phrase and explain the rule without correcting it.
+- Discuss connectors (quantity and variety).
 
-### FINAL WORD COUNT PENALTY (CRITICAL)
-- RULE: If the EXACT WORD COUNT is < 80 words:
-    1. Calculate the raw total: (Score C1 + Score C2 + Score C3).
-    2. Divide that total by 2.
-    3. This is the Final Grade.
-- If word count is 80 or more, the Final Grade is simply (C1 + C2 + C3).
+'Morfosintaxi i ortografia (Score: X/4)'
+- Quote every grammar error and explain the rule.
+- For spelling, say: "Check the capitalization/spelling of the word [wrong word]". DO NOT type the corrected word.
 
-### INTERNAL WORKSPACE (MANDATORY):
-1. Scan the text and create a list of every error.
-2. CONNECTORS: List all found. Count Total and Unique.
-3. C1 DEDUCTIONS: List every error. SUM deductions. Subtract from 4.0.
-4. C2 DEDUCTIONS: List every error. SUM deductions. Subtract from 4.0.
-5. C3 SELECTION: State if 0, 1, or 2 based on vocabulary.
-6. FINAL MATH: (C1 Score + C2 Score + C3 Score). If Word Count < 80, divide by 2.
-7. Use a comma for decimals.
-8. ENSURE math is hidden from the sections below.
+'Lèxic (Score: X/2)'
+- Indicate if the vocabulary is "rich", "suitable but not rich" or "poor".
 
-### FEEDBACK STRUCTURE (PUBLIC):
-1. CRITICAL: Do NOT list point values (e.g., -0.5, -0.2) or math equations in this section. The student must only see the final Score in the header and the grammatical explanations. Keep all math inside the INTERNAL WORKSPACE.
-2. 'Overall Impression: ' [Write a brief introductory paragraph here]
+'Recommendations'
+- Give 2 bullet points for improvement.
 
----
-
-3. Use the exact format for the following headers:
-###### **Adequació, coherència i cohesió (Score: X/4)**
-* Discuss organization, genre, register, and punctuation. 
-* Content Coverage: Check against 'REQUIRED CONTENT POINTS' ONLY.
-* Punctuation: Quote the phrase and explain the rule (no corrections).
-* Comma Splices: If found, quote them here. Explain that a comma cannot join two complete sentences and suggest using a full stop or a connector, but do not write the corrected sentence.
-* Introductory Commas: Mention missing commas after time/place phrases here.
-* Connectors: Discuss quantity and variety.
-
-###### **Morfosintaxi i ortografia (Score: X/4)**
-* Quote every morphosyntactic and lexical error found (e.g. verb tense, agreement, prepositions, word order, collocations, articles, and pronouns).
-* Explain the rule. **STRICTLY FORBIDDEN** to provide the correction. The student must find the correction themselves.
-* Spelling: Use "Check the capitalization/spelling of the word [wrong word]".
-
-###### **Lèxic (Score: X/2)**
-* Indicate if vocabulary is "rich", "suitable but not rich" or "poor".
-
----
-
-###### **FINAL MARK: X/10** (Use a comma for decimals, e.g., 4,6/10)
-
+### FINAL GRADE CALCULATION:
+If the word count is under 80 words, include a note: "Length Penalty: Composition is under 80 words; the total score has been divided by 2."
+AT THE VERY END, write 'FINAL MARK: X/10' (Use a comma for decimals).
 """
 
 # 3. SESSION STATE
@@ -125,20 +74,11 @@ if 'fb1' not in st.session_state:
 if 'fb2' not in st.session_state:
     st.session_state.fb2 = ""
 
-
 # 4. AI CONNECTION
 def call_gemini(prompt):
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key={API_KEY}"
     headers = {'Content-Type': 'application/json'}
-    data = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {
-            "temperature": 0.0,
-            "topP": 0.8,
-            "topK": 10
-        }
-    }
-    
+    data = {"contents": [{"parts": [{"text": prompt}]}]}
     for attempt in range(3):
         response = requests.post(url, headers=headers, json=data)
         if response.status_code == 200:
@@ -153,28 +93,15 @@ st.set_page_config(page_title="Writing Test", layout="centered", initial_sidebar
 
 st.markdown("""
     <style>
-    /* Hides Streamlit UI elements */
     [data-testid="stHeaderActionElements"], .stDeployButton, [data-testid="stToolbar"], 
     [data-testid="stSidebarCollapseButton"], #MainMenu, [data-testid="stDecoration"], footer {
         display: none !important;
     }
     header { background-color: rgba(0,0,0,0) !important; }
-
-    /* MAKES THE TEXT INSIDE THE WRITING BOX BIGGER */
-    .stTextArea textarea {
-        font-size: 18px !important;
-        line-height: 1.6 !important;
-        font-family: 'Source Sans Pro', sans-serif !important;
-    }
-    
-    /* MAKES THE CAPTION (WORD COUNT) SLIGHTLY LARGER */
-    .stCaption {
-        font-size: 14px !important;
-    }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("📝 Writing")
+st.title("📝 Writing Test")
 
 with st.sidebar:
     st.header("Student Info")
@@ -187,10 +114,7 @@ with st.sidebar:
     student_list = ", ".join(names)
 
 # Main Essay Area
-st.markdown(f"### 📋 Task Description")
-st.markdown(f"<div style='font-size: 20px; line-height: 1.5; margin-bottom: 20px;'>{TASK_DESC}</div>", unsafe_allow_html=True)
-
-essay = st.text_area("Write your composition below:", value=st.session_state.essay_content, height=500)
+essay = st.text_area(TASK_DESC, value=st.session_state.essay_content, height=400)
 st.session_state.essay_content = essay
 
 word_count = len(essay.split())
@@ -200,54 +124,34 @@ st.caption(f"Word count: {word_count}")
 if not st.session_state.fb1 or st.session_state.fb1 == "The teacher is busy. Try again in 10 seconds.":
     if st.button("🔍 Get Feedback", use_container_width=True):
         if not s1 or not essay:
-            st.error("Please enter your name and write your composition first.")
+            st.error("Please enter your names and write your essay first.")
         else:
-            with st.spinner("Teacher is marking your composition..."):
+            with st.spinner("Teacher is marking your first draft..."):
                 formatted_points = "\n".join([f"- {p}" for p in REQUIRED_CONTENT_POINTS])
-                
-                full_prompt = f"""
-{RUBRIC_INSTRUCTIONS}
-
-STATISTICS:
-- EXACT WORD COUNT: {word_count} words
-
-REQUIRED CONTENT POINTS:
-{formatted_points}
-
-TASK CONTEXT:
-{TASK_DESC}
-
-STUDENT ESSAY:
-\"\"\"
-{essay}
-\"\"\"
-
-FINAL EXECUTION COMMANDS:
-1. STRICT RULE: Complete this step silently. NEVER include any text from the 'INTERNAL WORKSPACE' or 'DEDUCTIONS' or "FINAL GRADE CALCULATION" in your final response.
-2. PUBLIC FEEDBACK: your response must BEGIN with "Overall Impression" and END with "FINAL MARK".
-3. DO NOT mention point values (e.g., -0.5), math equations, or error lists in the public feedback.
-4. If a word count penalty is applied, state "There is a length penalty" without showing the division math.
-5. STOPSIGN: The very last thing you write must be the FINAL MARK.
-"""
+                full_prompt = (
+                    f"{RUBRIC_INSTRUCTIONS}\n\n"
+                    f"REQUIRED CONTENT POINTS:\n{formatted_points}\n\n"
+                    f"TASK CONTEXT:\n{TASK_DESC}\n\n"
+                    f"STUDENT ESSAY:\n{essay}"
+                )
                 fb = call_gemini(full_prompt)
+                st.session_state.fb1 = fb
 
                 if fb != "The teacher is busy. Try again in 10 seconds.":
-                    st.session_state.fb1 = fb
                     mark_search = re.search(r"FINAL MARK:\s*(\d+,?\d*/10)", fb)
                     mark_value = mark_search.group(1) if mark_search else "N/A"
-
                     requests.post(SHEET_URL, json={
                       "type": "FIRST", 
                       "Group": group, 
                       "Students": student_list, 
                       "Task": TASK_DESC,
-                      "Mark": mark_value,
-                      "Draft 1": essay,
-                      "FB 1": fb,
-                      "Final Essay": "",
-                      "FB 2": "",
-                      "Word Count": word_count
-                    })                  
+                      "Mark": mark_value,      # Col 5
+                      "Draft 1": essay,        # Col 6
+                      "FB 1": fb,              # Col 7
+                      "Final Essay": "",       # Col 8 (Placeholder)
+                      "FB 2": "",              # Col 9 (Placeholder)
+                      "Word Count": word_count # Col 10
+})                 
                     st.rerun()
                 else:
                     st.error(fb)
@@ -268,33 +172,29 @@ if st.session_state.fb1 and st.session_state.fb1 != "The teacher is busy. Try ag
     # --- 3. REVISION BUTTON ---
     if not st.session_state.fb2:
         if st.button("🚀 Submit Final Revision", use_container_width=True):
-            with st.spinner("✨ Teacher is reviewing your changes..."):
+            with st.spinner("✨ Teacher is reviewing your changes... please wait."):
                 rev_prompt = (
-                    f"{RUBRIC_INSTRUCTIONS}\n\n"
                     f"--- ORIGINAL FEEDBACK ---\n{st.session_state.fb1}\n\n"
                     f"--- NEW REVISED VERSION ---\n{essay}\n\n"
-                    f"CRITICAL INSTRUCTIONS:\n"
-                    f"1. YOU ARE A RIGOROUS EXAMINER. Compare the NEW VERSION against the ORIGINAL FEEDBACK word-by-word to check if previous errors were fixed.\n"
-                    f"2. Mention both the improvements AND any new issues found.\n"
-                    f"3. DO NOT GIVE ANSWERS. Even for uncorrected errors, just explain the rule.\n\n"
-                    f"4. NO new grade. NO names. NO B2."
+                    f"CRITICAL INSTRUCTIONS:\n1. Compare NEW VERSION to ORIGINAL FEEDBACK.\n"
+                    f"2. Check if quoted errors were fixed.\n3. NO new grade. NO names. NO B2."
                 )
-                
                 fb2 = call_gemini(rev_prompt)
                 
                 if fb2 != "The teacher is busy. Try again in 10 seconds.":
                     st.session_state.fb2 = fb2
+                    # THIS BLOCK MUST BE INDENTED TO BE INSIDE THE SUCCESS CONDITION
                     requests.post(SHEET_URL, json={
                         "type": "REVISION", 
                         "Group": group, 
                         "Students": student_list,
                         "Task": TASK_DESC,
-                        "Mark": "REVISED",
-                        "Draft 1": "---",
-                        "FB 1": "---",
-                        "Final Essay": essay,
-                        "FB 2": fb2,
-                        "Word Count": word_count
+                        "Mark": "REVISED",       # Column 5
+                        "Draft 1": "---",        # Column 6
+                        "FB 1": "---",           # Column 7
+                        "Final Essay": essay,    # Column 8
+                        "FB 2": fb2,             # Column 9
+                        "Word Count": word_count # Column 10
                     })
                     st.balloons()
                     st.rerun()
