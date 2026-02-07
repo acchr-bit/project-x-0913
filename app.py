@@ -169,10 +169,13 @@ st.title("📝 Writing Task")
 with st.sidebar:
     st.header("Student Info")
     group = st.selectbox("Group", [" ","3A", "3C", "4A", "4B", "4C"])
-    s1 = st.text_input("Student 1")
-    s2 = st.text_input("Student 2")
-    names = [s.strip() for s in [s1, s2] if s.strip()]
+    s1 = st.text_input("Student 1 - Name and Surname")
+    s2 = st.text_input("Student 2 - Name and Surname")
+    s3 = st.text_input("Student 3 - Name and Surname")
+    s4 = st.text_input("Student 4 - Name and Surname")
+    names = [s.strip() for s in [s1, s2, s3, s4] if s.strip()]
     student_list = ", ".join(names)
+
 
 # Main Essay Area
 st.markdown(f"### 📋 Task Description")
